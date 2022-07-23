@@ -4,9 +4,9 @@
 
   Mach4Mill post processor configuration.
 
-  $Revision: 43262 b8c9137bd3ef7bcc6437110256bba039137f5046 $
-  $Date: 2021-05-12 11:28:01 $
-  
+  $Revision: 43532 953e9052f83a5e7ebe58d54b0f5357eca5369a48 $
+  $Date: 2021-11-25 13:38:02 $
+
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
 
@@ -36,126 +36,135 @@ allowedCircularPlanes = undefined; // allow any circular motion
 // user-defined properties
 properties = {
   writeMachine: {
-    title: "Write machine",
+    title      : "Write machine",
     description: "Output the machine settings in the header of the code.",
-    group: 0,
-    type: "boolean",
-    value: true,
-    scope: "post"
+    group      : 0,
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
   },
   writeTools: {
-    title: "Write tool list",
+    title      : "Write tool list",
     description: "Output a tool list in the header of the code.",
-    group: 0,
-    type: "boolean",
-    value: true,
-    scope: "post"
+    group      : 0,
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
   },
   safePositionMethod: {
-    title: "Safe Retracts",
+    title      : "Safe Retracts",
     description: "Select your desired retract option. 'Clearance Height' retracts to the operation clearance height.",
-    type: "enum",
-    values: [
-      {title: "G28", id: "G28"},
-      {title: "G53", id: "G53"},
-      {title: "Clearance Height", id: "clearanceHeight"},
-      {title: "G30", id: "G30"}
+    type       : "enum",
+    values     : [
+      {title:"G28", id:"G28"},
+      {title:"G53", id:"G53"},
+      {title:"Clearance Height", id:"clearanceHeight"},
+      {title:"G30", id:"G30"}
     ],
     value: "G28",
     scope: "post"
   },
   useM6: {
-    title: "Use M6",
+    title      : "Use M6",
     description: "Disable to avoid outputting M6. If disabled Preload is also disabled",
-    group: 1,
-    type: "boolean",
-    value: true,
-    scope: "post"
+    group      : 1,
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
   },
   preloadTool: {
-    title: "Preload tool",
+    title      : "Preload tool",
     description: "Preloads the next tool at a tool change (if any).",
-    type: "boolean",
-    value: false,
-    scope: "post"
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
   },
   showSequenceNumbers: {
-    title: "Use sequence numbers",
+    title      : "Use sequence numbers",
     description: "Use sequence numbers for each block of outputted code.",
-    group: 1,
-    type: "boolean",
-    value: false,
-    scope: "post"
+    group      : 1,
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
   },
   sequenceNumberStart: {
-    title: "Start sequence number",
+    title      : "Start sequence number",
     description: "The number at which to start the sequence numbers.",
-    group: 1,
-    type: "integer",
-    value: 10,
-    scope: "post"
+    group      : 1,
+    type       : "integer",
+    value      : 10,
+    scope      : "post"
   },
   sequenceNumberIncrement: {
-    title: "Sequence number increment",
+    title      : "Sequence number increment",
     description: "The amount by which the sequence number is incremented by in each block.",
-    group: 1,
-    type: "integer",
-    value: 5,
-    scope: "post"
+    group      : 1,
+    type       : "integer",
+    value      : 5,
+    scope      : "post"
   },
   optionalStop: {
-    title: "Optional stop",
+    title      : "Optional stop",
     description: "Outputs optional stop code during when necessary in the code.",
-    type: "boolean",
-    value: true,
-    scope: "post"
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
   },
   separateWordsWithSpace: {
-    title: "Separate words with space",
+    title      : "Separate words with space",
     description: "Adds spaces between words if 'yes' is selected.",
-    type: "boolean",
-    value: true,
-    scope: "post"
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
   },
   useRadius: {
-    title: "Radius arcs",
+    title      : "Radius arcs",
     description: "If yes is selected, arcs are outputted using radius values rather than IJK.",
-    type: "boolean",
-    value: false,
-    scope: "post"
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
   },
   dwellInSeconds: {
-    title: "Dwell in seconds",
+    title      : "Dwell in seconds",
     description: "Specifies the unit for dwelling, set to 'Yes' for seconds and 'No' for milliseconds.",
-    type: "boolean",
-    value: true,
-    scope: "post"
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
   },
   useSubroutines: {
-    title: "Use subroutines",
+    title      : "Use subroutines",
     description: "Select your desired subroutine option. 'All Operations' creates subroutines per each operation, 'Cycles' creates subroutines for cycle operations on same holes, and 'Patterns' creates subroutines for patterned operations.",
-    type: "enum",
-    values: [
-      {title: "No", id: "none"},
-      {title: "All Operations", id: "allOperations"},
-      {title: "Cycles", id: "cycles"},
-      {title: "Patterns", id: "patterns"}
+    type       : "enum",
+    values     : [
+      {title:"No", id:"none"},
+      {title:"All Operations", id:"allOperations"},
+      {title:"Cycles", id:"cycles"},
+      {title:"Patterns", id:"patterns"}
     ],
     value: "none",
     scope: "post"
   },
   useRigidTapping: {
-    title: "Use rigid tapping",
+    title      : "Use rigid tapping",
     description: "Select 'Yes' to enable, 'No' to disable, or 'Without spindle direction' to enable rigid tapping without outputting the spindle direction block.",
-    type: "enum",
-    values: [
-      {title: "Yes", id: "yes"},
-      {title: "No", id: "no"},
-      {title: "Without spindle direction", id: "without"}
+    type       : "enum",
+    values     : [
+      {title:"Yes", id:"yes"},
+      {title:"No", id:"no"},
+      {title:"Without spindle direction", id:"without"}
     ],
     value: "yes",
     scope: "post"
   }
+};
+
+// wcs definiton
+wcsDefinitions = {
+  useZeroOffset: false,
+  wcs          : [
+    {name:"Standard", format:"G", range:[54, 59]},
+    {name:"Extended", format:"G59 P", range:[1, 254]}
+  ]
 };
 
 var permittedCommentChars = " ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.,=_-";
@@ -164,16 +173,17 @@ var singleLineCoolant = false; // specifies to output multiple coolant codes in 
 // samples:
 // {id: COOLANT_THROUGH_TOOL, on: 88, off: 89}
 // {id: COOLANT_THROUGH_TOOL, on: [8, 88], off: [9, 89]}
+// {id: COOLANT_THROUGH_TOOL, on: "M88 P3 (myComment)", off: "M89"}
 var coolants = [
-  {id: COOLANT_FLOOD, on: 8},
-  {id: COOLANT_MIST, on: 7},
-  {id: COOLANT_THROUGH_TOOL},
-  {id: COOLANT_AIR},
-  {id: COOLANT_AIR_THROUGH_TOOL},
-  {id: COOLANT_SUCTION},
-  {id: COOLANT_FLOOD_MIST},
-  {id: COOLANT_FLOOD_THROUGH_TOOL},
-  {id: COOLANT_OFF, off: 9}
+  {id:COOLANT_FLOOD, on:8},
+  {id:COOLANT_MIST, on:7},
+  {id:COOLANT_THROUGH_TOOL},
+  {id:COOLANT_AIR},
+  {id:COOLANT_AIR_THROUGH_TOOL},
+  {id:COOLANT_SUCTION},
+  {id:COOLANT_FLOOD_MIST},
+  {id:COOLANT_FLOOD_THROUGH_TOOL},
+  {id:COOLANT_OFF, off:9}
 ];
 
 var nFormat = createFormat({prefix:"N", decimals:0});
@@ -293,7 +303,7 @@ function onOpen() {
   if (!machineConfiguration.isMachineCoordinate(2)) {
     cOutput.disable();
   }
-  
+
   if (!getProperty("separateWordsWithSpace")) {
     setWordSeparator("");
   }
@@ -306,7 +316,7 @@ function onOpen() {
   if (programComment) {
     writeComment(programComment);
   }
-  
+
   lastSubprogram = 0;
 
   // dump machine configuration
@@ -362,7 +372,7 @@ function onOpen() {
       }
     }
   }
-  
+
   if (false) {
     // check for duplicate tool number
     for (var i = 0; i < getNumberOfSections(); ++i) {
@@ -510,7 +520,7 @@ function setWorkPlane(abc) {
     conditional(machineConfiguration.isMachineCoordinate(1), "B" + abcFormat.format(abc.y)),
     conditional(machineConfiguration.isMachineCoordinate(2), "C" + abcFormat.format(abc.z))
   );
-  
+
   onCommand(COMMAND_LOCK_MULTI_AXIS);
 
   currentWorkPlaneABC = abc;
@@ -532,7 +542,7 @@ function getWorkPlaneMachineABC(workPlane, _setWorkPlane) {
   } else {
     abc = machineConfiguration.getPreferredABC(abc);
   }
-  
+
   try {
     abc = machineConfiguration.remapABC(abc);
     if (_setWorkPlane) {
@@ -546,12 +556,12 @@ function getWorkPlaneMachineABC(workPlane, _setWorkPlane) {
       + conditional(machineConfiguration.isMachineCoordinate(2), " C" + abcFormat.format(abc.z))
     );
   }
-  
+
   var direction = machineConfiguration.getDirection(abc);
   if (!isSameDirection(direction, W.forward)) {
     error(localize("Orientation not supported."));
   }
-  
+
   if (!machineConfiguration.isABCSupported(abc)) {
     error(
       localize("Work plane is not supported") + ":"
@@ -569,7 +579,7 @@ function getWorkPlaneMachineABC(workPlane, _setWorkPlane) {
     var R = machineConfiguration.getRemainingOrientation(abc, W);
     setRotation(R);
   }
-  
+
   return abc;
 }
 
@@ -614,12 +624,12 @@ function subprogramDefine(_initialPosition, _abc, _retracted, _zIsOutput) {
         currentSubprogram = ++lastSubprogram;
       }
       definedPatterns.push({
-        patternType: SUB_PATTERN,
-        patternId: currentPattern,
-        subProgram: currentSubprogram,
-        validPattern: usePattern,
+        patternType    : SUB_PATTERN,
+        patternId      : currentPattern,
+        subProgram     : currentSubprogram,
+        validPattern   : usePattern,
         initialPosition: _initialPosition,
-        finalPosition: _initialPosition
+        finalPosition  : _initialPosition
       });
     }
 
@@ -666,12 +676,12 @@ function subprogramDefine(_initialPosition, _abc, _retracted, _zIsOutput) {
         currentSubprogram = ++lastSubprogram;
       }
       definedPatterns.push({
-        patternType: SUB_CYCLE,
-        patternId: currentPattern,
-        subProgram: currentSubprogram,
-        validPattern: usePattern,
+        patternType    : SUB_CYCLE,
+        patternId      : currentPattern,
+        subProgram     : currentSubprogram,
+        validPattern   : usePattern,
         initialPosition: _initialPosition,
-        finalPosition: finalPosition
+        finalPosition  : finalPosition
       });
     }
     cycleSubprogramIsActive = usePattern;
@@ -780,9 +790,9 @@ function subprogramIsValid(_section, _patternId, _patternType) {
 function setAxisMode(_format, _output, _prefix, _value, _incr) {
   var i = _output.isEnabled();
   if (_output == zOutput) {
-    _output = _incr ? createIncrementalVariable({onchange: function() {retracted = false;}, prefix: _prefix}, _format) : createVariable({onchange: function() {retracted = false;}, prefix: _prefix}, _format);
+    _output = _incr ? createIncrementalVariable({onchange:function() {retracted = false;}, prefix:_prefix}, _format) : createVariable({onchange:function() {retracted = false;}, prefix:_prefix}, _format);
   } else {
-    _output = _incr ? createIncrementalVariable({prefix: _prefix}, _format) : createVariable({prefix: _prefix}, _format);
+    _output = _incr ? createIncrementalVariable({prefix:_prefix}, _format) : createVariable({prefix:_prefix}, _format);
   }
   _output.format(_value);
   _output.format(_value);
@@ -824,7 +834,7 @@ function onSection() {
   var insertToolCall = isFirstSection() ||
     currentSection.getForceToolChange && currentSection.getForceToolChange() ||
     (tool.number != getPreviousSection().getTool().number);
-  
+
   retracted = false;
   var zIsOutput = false; // true if the Z-position has been output, used for patterns
 
@@ -858,10 +868,10 @@ function onSection() {
 
   if (insertToolCall) {
     forceWorkPlane();
-    
+
     onCommand(COMMAND_STOP_SPINDLE);
     setCoolant(COOLANT_OFF);
-  
+
     if (!isFirstSection() && getProperty("optionalStop")) {
       onCommand(COMMAND_OPTIONAL_STOP);
     }
@@ -909,7 +919,7 @@ function onSection() {
       }
     }
   }
-  
+
   if (insertToolCall ||
       isFirstSection() ||
       (rpmFormat.areDifferent(spindleSpeed, sOutput.getCurrent())) ||
@@ -937,28 +947,10 @@ function onSection() {
   if (insertToolCall) { // force work offset when changing tool
     currentWorkOffset = undefined;
   }
-  var workOffset = currentSection.workOffset;
-  if (workOffset == 0) {
-    warningOnce(localize("Work offset has not been specified. Using G54 as WCS."), WARNING_WORK_OFFSET);
-    workOffset = 1;
-  }
-  if (workOffset > 0) {
-    if (workOffset > 6) {
-      var p = workOffset; // 1->... // G59 P1 is the same as G54 and so on
-      if (p > 254) {
-        error(localize("Work offset out of range."));
-      } else {
-        if (workOffset != currentWorkOffset) {
-          writeBlock(gFormat.format(59), "P" + p); // G59 P
-          currentWorkOffset = workOffset;
-        }
-      }
-    } else {
-      if (workOffset != currentWorkOffset) {
-        writeBlock(gFormat.format(53 + workOffset)); // G54->G59
-        currentWorkOffset = workOffset;
-      }
-    }
+
+  if (currentSection.workOffset != currentWorkOffset) {
+    writeBlock(currentSection.wcs);
+    currentWorkOffset = currentSection.workOffset;
   }
 
   forceXYZ();
@@ -988,7 +980,7 @@ function onSection() {
 
     gMotionModal.reset();
     writeBlock(gPlaneModal.format(17));
-    
+
     if (!machineConfiguration.isHeadConfiguration()) {
       writeBlock(
         gAbsIncModal.format(90),
@@ -1073,7 +1065,7 @@ function onCyclePoint(x, y, z) {
   }
   if (isFirstCyclePoint()) {
     repositionToCycleClearance(cycle, x, y, z);
-    
+
     // return to initial Z which is clearance plane and set absolute mode
 
     var F = cycle.feedrate;
@@ -1380,7 +1372,7 @@ function onLinear5D(_x, _y, _z, _a, _b, _c, feed) {
   var a = aOutput.format(_a);
   var b = bOutput.format(_b);
   var c = cOutput.format(_c);
-  
+
   // get feedrate number
   var f = {frn:0, fmode:0};
   if (a || b || c) {
@@ -1430,9 +1422,9 @@ function getMultiaxisFeed(_x, _y, _z, _a, _b, _c, feed) {
     error(localize("Feedrate is less than or equal to 0."));
     return f;
   }
-  
+
   var length = getMoveLength(_x, _y, _z, _a, _b, _c);
-  
+
   if (useInverseTimeFeed) { // inverse time
     f.frn = getInverseTime(length.tool, feed);
     f.fmode = 93;
@@ -1452,7 +1444,7 @@ function getOptimizedMode() {
   // return (currentSection.getOptimizedTCPMode() != 0); // TAG:doesn't return correct value
   return true; // always return false for non-TCP based heads
 }
-  
+
 /** Calculate the DPM feedrate number. */
 function getFeedDPM(_moveLength, _feed) {
   if ((_feed == 0) || (_moveLength.tool < 0.0001) || (toDeg(_moveLength.abcLength) < 0.0005)) {
@@ -1563,7 +1555,7 @@ function getRotaryRadius(axis, toolPosition, abc) {
   }
   return radius;
 }
-  
+
 /** Calculate the linear distance based on the rotation of a rotary axis. */
 function getRadialDistance(radius, startABC, endABC) {
   // calculate length of radial move
@@ -1574,7 +1566,7 @@ function getRadialDistance(radius, startABC, endABC) {
   var radialLength = (2 * Math.PI * radius) * (delta / (2 * Math.PI));
   return radialLength;
 }
-  
+
 /** Calculate tooltip, XYZ, and rotary move lengths. */
 function getMoveLength(_x, _y, _z, _a, _b, _c) {
   // get starting and ending positions
@@ -1590,7 +1582,7 @@ function getMoveLength(_x, _y, _z, _a, _b, _c) {
     startABC = getCurrentDirection();
   }
   var endABC = new Vector(_a, _b, _c);
-    
+
   if (!getOptimizedMode()) { // calculate XYZ from tool tip
     startTool = getCurrentPosition();
     endTool = new Vector(_x, _y, _z);
@@ -1637,14 +1629,14 @@ function getMoveLength(_x, _y, _z, _a, _b, _c) {
 
   // calculate radii
   moveLength.radius = getRotaryRadii(startTool, endTool, startABC, endABC);
-  
+
   // calculate the radial portion of the tool tip movement
   var radialLength = Math.sqrt(
     Math.pow(getRadialDistance(moveLength.radius.x, startABC.x, endABC.x), 2.0) +
     Math.pow(getRadialDistance(moveLength.radius.y, startABC.y, endABC.y), 2.0) +
     Math.pow(getRadialDistance(moveLength.radius.z, startABC.z, endABC.z), 2.0)
   );
-  
+
   // calculate the tool tip move length
   // tool tip distance is the move distance based on a combination of linear and rotary axes movement
   moveLength.tool = moveLength.xyzLength + radialLength;
@@ -1745,7 +1737,7 @@ function getCoolantCodes(coolant) {
   if (!coolants) {
     error(localize("Coolants have not been defined."));
   }
-  if (isProbeOperation()) { // avoid coolant output for probing
+  if (tool.type == TOOL_PROBE) { // avoid coolant output for probing
     coolant = COOLANT_OFF;
   }
   if (coolant == currentCoolantMode) {
@@ -1754,10 +1746,10 @@ function getCoolantCodes(coolant) {
   if ((coolant != COOLANT_OFF) && (currentCoolantMode != COOLANT_OFF) && (coolantOff != undefined)) {
     if (Array.isArray(coolantOff)) {
       for (var i in coolantOff) {
-        multipleCoolantBlocks.push(mFormat.format(coolantOff[i]));
+        multipleCoolantBlocks.push(coolantOff[i]);
       }
     } else {
-      multipleCoolantBlocks.push(mFormat.format(coolantOff));
+      multipleCoolantBlocks.push(coolantOff);
     }
   }
 
@@ -1792,26 +1784,31 @@ function getCoolantCodes(coolant) {
   } else {
     if (Array.isArray(m)) {
       for (var i in m) {
-        multipleCoolantBlocks.push(mFormat.format(m[i]));
+        multipleCoolantBlocks.push(m[i]);
       }
     } else {
-      multipleCoolantBlocks.push(mFormat.format(m));
+      multipleCoolantBlocks.push(m);
     }
     currentCoolantMode = coolant;
+    for (var i in multipleCoolantBlocks) {
+      if (typeof multipleCoolantBlocks[i] == "number") {
+        multipleCoolantBlocks[i] = mFormat.format(multipleCoolantBlocks[i]);
+      }
+    }
     return multipleCoolantBlocks; // return the single formatted coolant value
   }
   return undefined;
 }
 
 var mapCommand = {
-  COMMAND_STOP:0,
-  COMMAND_OPTIONAL_STOP:1,
-  COMMAND_END:2,
-  COMMAND_SPINDLE_CLOCKWISE:3,
-  COMMAND_SPINDLE_COUNTERCLOCKWISE:4,
-  COMMAND_STOP_SPINDLE:5,
-  COMMAND_ORIENTATE_SPINDLE:19,
-  COMMAND_LOAD_TOOL:6
+  COMMAND_STOP                    : 0,
+  COMMAND_OPTIONAL_STOP           : 1,
+  COMMAND_END                     : 2,
+  COMMAND_SPINDLE_CLOCKWISE       : 3,
+  COMMAND_SPINDLE_COUNTERCLOCKWISE: 4,
+  COMMAND_STOP_SPINDLE            : 5,
+  COMMAND_ORIENTATE_SPINDLE       : 19,
+  COMMAND_LOAD_TOOL               : 6
 };
 
 function onCommand(command) {
@@ -1828,7 +1825,7 @@ function onCommand(command) {
   case COMMAND_TOOL_MEASURE:
     return;
   }
-  
+
   var stringId = getCommandStringId(command);
   var mcode = mapCommand[stringId];
   if (mcode != undefined) {
