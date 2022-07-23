@@ -4,8 +4,8 @@
 
   Mach4Mill post processor configuration.
 
-  $Revision: 43751 478f4bd6abaa459ecddee0a6c48d45726439bc90 $
-  $Date: 2022-04-07 17:33:18 $
+  $Revision: 43759 a148639d401c1626f2873b948fb6d996d3bc60aa $
+  $Date: 2022-04-12 21:31:49 $
 
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -38,7 +38,7 @@ properties = {
   writeMachine: {
     title      : "Write machine",
     description: "Output the machine settings in the header of the code.",
-    group      : 0,
+    group      : "formats",
     type       : "boolean",
     value      : true,
     scope      : "post"
@@ -46,7 +46,7 @@ properties = {
   writeTools: {
     title      : "Write tool list",
     description: "Output a tool list in the header of the code.",
-    group      : 0,
+    group      : "formats",
     type       : "boolean",
     value      : true,
     scope      : "post"
@@ -54,6 +54,7 @@ properties = {
   safePositionMethod: {
     title      : "Safe Retracts",
     description: "Select your desired retract option. 'Clearance Height' retracts to the operation clearance height.",
+    group      : "homePositions",
     type       : "enum",
     values     : [
       {title:"G28", id:"G28"},
@@ -64,10 +65,10 @@ properties = {
     value: "G28",
     scope: "post"
   },
-  useM6: {
+  useM06: {
     title      : "Use M6",
     description: "Disable to avoid outputting M6. If disabled Preload is also disabled",
-    group      : 1,
+    group      : "preferences",
     type       : "boolean",
     value      : true,
     scope      : "post"
@@ -75,6 +76,7 @@ properties = {
   preloadTool: {
     title      : "Preload tool",
     description: "Preloads the next tool at a tool change (if any).",
+    group      : "preferences",
     type       : "boolean",
     value      : false,
     scope      : "post"
@@ -82,7 +84,7 @@ properties = {
   showSequenceNumbers: {
     title      : "Use sequence numbers",
     description: "Use sequence numbers for each block of outputted code.",
-    group      : 1,
+    group      : "formats",
     type       : "boolean",
     value      : false,
     scope      : "post"
@@ -90,7 +92,7 @@ properties = {
   sequenceNumberStart: {
     title      : "Start sequence number",
     description: "The number at which to start the sequence numbers.",
-    group      : 1,
+    group      : "formats",
     type       : "integer",
     value      : 10,
     scope      : "post"
@@ -98,7 +100,7 @@ properties = {
   sequenceNumberIncrement: {
     title      : "Sequence number increment",
     description: "The amount by which the sequence number is incremented by in each block.",
-    group      : 1,
+    group      : "formats",
     type       : "integer",
     value      : 5,
     scope      : "post"
@@ -106,6 +108,7 @@ properties = {
   optionalStop: {
     title      : "Optional stop",
     description: "Outputs optional stop code during when necessary in the code.",
+    group      : "preferences",
     type       : "boolean",
     value      : true,
     scope      : "post"
@@ -113,6 +116,7 @@ properties = {
   separateWordsWithSpace: {
     title      : "Separate words with space",
     description: "Adds spaces between words if 'yes' is selected.",
+    group      : "formats",
     type       : "boolean",
     value      : true,
     scope      : "post"
@@ -120,6 +124,7 @@ properties = {
   useRadius: {
     title      : "Radius arcs",
     description: "If yes is selected, arcs are outputted using radius values rather than IJK.",
+    group      : "preferences",
     type       : "boolean",
     value      : false,
     scope      : "post"
@@ -127,6 +132,7 @@ properties = {
   dwellInSeconds: {
     title      : "Dwell in seconds",
     description: "Specifies the unit for dwelling, set to 'Yes' for seconds and 'No' for milliseconds.",
+    group      : "preferences",
     type       : "boolean",
     value      : true,
     scope      : "post"
@@ -134,6 +140,7 @@ properties = {
   useSubroutines: {
     title      : "Use subroutines",
     description: "Select your desired subroutine option. 'All Operations' creates subroutines per each operation, 'Cycles' creates subroutines for cycle operations on same holes, and 'Patterns' creates subroutines for patterned operations.",
+    group      : "preferences",
     type       : "enum",
     values     : [
       {title:"No", id:"none"},
@@ -147,6 +154,7 @@ properties = {
   useRigidTapping: {
     title      : "Use rigid tapping",
     description: "Select 'Yes' to enable, 'No' to disable, or 'Without spindle direction' to enable rigid tapping without outputting the spindle direction block.",
+    group      : "preferences",
     type       : "enum",
     values     : [
       {title:"Yes", id:"yes"},
@@ -881,7 +889,7 @@ function onSection() {
       warning(localize("Tool number exceeds maximum value."));
     }
 
-    if (getProperty("useM6")) {
+    if (getProperty("useM06")) {
       writeBlock("T" + toolFormat.format(tool.number), mFormat.format(6));
     } else {
       writeBlock(mFormat.format(0), formatComment(localize("CHANGE TOOL")));
@@ -907,7 +915,7 @@ function onSection() {
       }
     }
 
-    if (getProperty("preloadTool") && getProperty("useM6")) {
+    if (getProperty("preloadTool") && getProperty("useM06")) {
       var nextTool = getNextTool(tool.number);
       if (nextTool) {
         writeBlock("T" + toolFormat.format(nextTool.number));
