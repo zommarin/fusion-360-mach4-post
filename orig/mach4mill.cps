@@ -4,8 +4,8 @@
 
   Mach4Mill post processor configuration.
 
-  $Revision: 42686 5c1fa50acdb1bb63ef5f7fa14280f184facca587 $
-  $Date: 2020-03-09 16:22:50 $
+  $Revision: 43027 f4d85eaf905595998240b6a851ef217e44a4109a $
+  $Date: 2020-11-17 17:40:56 $
   
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -37,7 +37,7 @@ allowedCircularPlanes = undefined; // allow any circular motion
 properties = {
   writeMachine: true, // write machine
   writeTools: true, // writes the tools
-  useG28: "true", // specifies the desired safe retract option
+  safePositionMethod: "G28", // specifies the desired safe position option
   useM6: true, // disable to avoid M6 output - preload is also disabled when M6 is disabled
   preloadTool: false, // preloads next tool on tool change if any
   showSequenceNumbers: false, // show sequence numbers
@@ -57,15 +57,15 @@ properties = {
 propertyDefinitions = {
   writeMachine: {title:"Write machine", description:"Output the machine settings in the header of the code.", group:0, type:"boolean"},
   writeTools: {title:"Write tool list", description:"Output a tool list in the header of the code.", group:0, type:"boolean"},
-  useG28: {
+  safePositionMethod: {
     title: "Safe Retracts",
     description: "Select your desired retract option. 'Clearance Height' retracts to the operation clearance height.",
     type: "enum",
     values:[
-      {title:"G28", id:"true"},
-      {title:"G53", id:"false"},
-      {title:"G30", id:"useG30"},
-      {title:"Clearance Height", id:"clearanceHeight"}
+      {title:"G28", id: "G28"},
+      {title:"G53", id: "G53"},
+      {title:"Clearance Height", id: "clearanceHeight"},
+      {title:"G30", id: "G30"}
     ]
   },
   useM6: {title:"Use M6", description:"Disable to avoid outputting M6. If disabled Preload is also disabled", group:1, type:"boolean"},
@@ -1806,34 +1806,27 @@ function onSectionEnd() {
 /** Output block to do safe retract and/or move to home position. */
 function writeRetract() {
   var words = []; // store all retracted axes in an array
-  var _xyzMoved = new Array(false, false, false);
-  var _useG28 = false;
-
-  if (properties.useG28 == "true" || properties.useG28 == "useG30") {
-    _useG28 = true;
-  } else if (properties.useG28 == "clearanceHeight") {
+  var retractAxes = new Array(false, false, false);
+  var method = properties.safePositionMethod;
+  if (method == "clearanceHeight") {
     if (!is3D()) {
       error(localize("Retract option 'Clearance Height' is not supported for multi-axis machining."));
     }
-    return; // G28 and G53 output is not desired
-  }
-
-  if (arguments.length == 0) {
-    error(localize("No axis specified for writeRetract()."));
     return;
   }
+  validate(arguments.length != 0, "No axis specified for writeRetract().");
+
   for (i in arguments) {
-    _xyzMoved[arguments[i]] = true;
+    retractAxes[arguments[i]] = true;
   }
-  if ((_xyzMoved[0] || _xyzMoved[1]) && !retracted) { // retract Z first before moving to X/Y home
+  if ((retractAxes[0] || retractAxes[1]) && !retracted) { // retract Z first before moving to X/Y home
     error(localize("Retracting in X/Y is not possible without being retracted in Z."));
     return;
   }
-
   // special conditions
   /*
-  if (_xyzMoved[2]) { // Z doesn't use G53
-    _useG28 = true;
+  if (retractAxes[2]) { // Z doesn't use G53
+    method = "G28";
   }
   */
 
@@ -1841,7 +1834,7 @@ function writeRetract() {
   var _xHome;
   var _yHome;
   var _zHome;
-  if (_useG28) {
+  if (method == "G28" || method == "G30") {
     _xHome = toPreciseUnit(0, MM);
     _yHome = toPreciseUnit(0, MM);
     _zHome = toPreciseUnit(0, MM);
@@ -1866,18 +1859,31 @@ function writeRetract() {
       retracted = true;
       break;
     default:
-      error(localize("Bad axis specified for writeRetract()."));
+      error(localize("Unsupported axis specified for writeRetract()."));
       return;
     }
   }
   if (words.length > 0) {
-    if (_useG28) {
+    switch (method) {
+    case "G28":
+      gMotionModal.reset();
       gAbsIncModal.reset();
-      writeBlock(gFormat.format((properties.useG28 == "useG30") ? 30 : 28), gAbsIncModal.format(91), words);
+      writeBlock(gFormat.format(28), gAbsIncModal.format(91), words);
       writeBlock(gAbsIncModal.format(90));
-    } else {
+      break;
+    case "G53":
       gMotionModal.reset();
       writeBlock(gAbsIncModal.format(90), gFormat.format(53), gMotionModal.format(0), words);
+      break;
+    case "G30":
+      gMotionModal.reset();
+      gAbsIncModal.reset();
+      writeBlock(gFormat.format(30), gAbsIncModal.format(91), words);
+      writeBlock(gAbsIncModal.format(90));
+      break;
+    default:
+      error(localize("Unsupported safe position method."));
+      return;
     }
   }
 }
