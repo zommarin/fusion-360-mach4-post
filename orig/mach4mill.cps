@@ -4,8 +4,8 @@
 
   Mach4Mill post processor configuration.
 
-  $Revision: 43811 9402f830a000e97e8885d344dcc12dc65bf77998 $
-  $Date: 2022-05-20 14:56:40 $
+  $Revision: 43868 ddbf802fc9321522cb4eee588c8f2ad4b237719e $
+  $Date: 2022-07-12 14:28:23 $
 
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -1201,6 +1201,10 @@ function onCyclePoint(x, y, z) {
       );
       break;
     case "reaming":
+      if (feedFormat.getResultingValue(cycle.feedrate) != feedFormat.getResultingValue(cycle.retractFeedrate)) {
+        expandCyclePoint(x, y, z);
+        break;
+      }
       if (P > 0) {
         writeBlock(
           gRetractModal.format(98), gCycleModal.format(89),
@@ -1233,6 +1237,10 @@ function onCyclePoint(x, y, z) {
       );
       break;
     case "boring":
+      if (feedFormat.getResultingValue(cycle.feedrate) != feedFormat.getResultingValue(cycle.retractFeedrate)) {
+        expandCyclePoint(x, y, z);
+        break;
+      }
       if (P > 0) {
         writeBlock(
           gRetractModal.format(98), gCycleModal.format(89),
