@@ -1,11 +1,11 @@
 /**
-  Copyright (C) 2012-2018 by Autodesk, Inc.
+  Copyright (C) 2012-2019 by Autodesk, Inc.
   All rights reserved.
 
   Mach4Mill post processor configuration.
 
-  $Revision: 42285 2a92613bd2b26bbe483938c4c193a033ed9d6f3f $
-  $Date: 2019-04-01 18:08:11 $
+  $Revision: 42297 f0d93e8ed85ce8e94af6a820f56a7d4c811c4a25 $
+  $Date: 2019-04-25 10:51:29 $
   
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -13,7 +13,7 @@
 description = "Mach4Mill";
 vendor = "Artsoft";
 vendorUrl = "http://www.machsupport.com";
-legal = "Copyright (C) 2012-2018 by Autodesk, Inc.";
+legal = "Copyright (C) 2012-2019 by Autodesk, Inc.";
 certificationLevel = 2;
 minimumRevision = 40783;
 
@@ -115,6 +115,7 @@ var nFormat = createFormat({prefix:"N", decimals:0});
 var gFormat = createFormat({prefix:"G", decimals:1});
 var mFormat = createFormat({prefix:"M", decimals:0});
 var hFormat = createFormat({prefix:"H", decimals:0});
+var dFormat = createFormat({prefix:"D", decimals:0});
 var pFormat = createFormat({prefix:"P", decimals:(unit == MM ? 3 : 4), scale:0.5});
 var xyzFormat = createFormat({decimals:(unit == MM ? 3 : 4), forceDecimal:true});
 var rFormat = xyzFormat; // radius
@@ -135,6 +136,7 @@ var bOutput = createVariable({prefix:"B"}, abcFormat);
 var cOutput = createVariable({prefix:"C"}, abcFormat);
 var feedOutput = createVariable({prefix:"F"}, feedFormat);
 var sOutput = createVariable({prefix:"S", force:true}, rpmFormat);
+var dOutput = createVariable({force:true}, dFormat);
 var pOutput = createVariable({}, pFormat);
 
 // circular output
@@ -180,6 +182,10 @@ var retracted = false; // specifies that the tool has been retracted to the safe
   Writes the specified block.
 */
 function writeBlock() {
+  var text = formatWords(arguments);
+  if (!text) {
+    return;
+  }
   if (properties.showSequenceNumbers) {
     writeWords2(nFormat.format(sequenceNumber % 100000), arguments);
     sequenceNumber += properties.sequenceNumberIncrement;
@@ -745,7 +751,12 @@ function onSection() {
   var newWorkOffset = isFirstSection() ||
     (getPreviousSection().workOffset != currentSection.workOffset); // work offset changes
   var newWorkPlane = isFirstSection() ||
-    !isSameDirection(getPreviousSection().getGlobalFinalToolAxis(), currentSection.getGlobalInitialToolAxis());
+    !isSameDirection(getPreviousSection().getGlobalFinalToolAxis(), currentSection.getGlobalInitialToolAxis()) ||
+    (currentSection.isOptimizedForMachine() && getPreviousSection().isOptimizedForMachine() &&
+      Vector.diff(getPreviousSection().getFinalToolAxisABC(), currentSection.getInitialToolAxisABC()).length > 1e-4) ||
+    (!machineConfiguration.isMultiAxisConfiguration() && currentSection.isMultiAxis()) ||
+    (!getPreviousSection().isMultiAxis() && currentSection.isMultiAxis() ||
+      getPreviousSection().isMultiAxis() && !currentSection.isMultiAxis()); // force newWorkPlane between indexing and simultaneous operations
   if (insertToolCall || newWorkOffset || newWorkPlane) {
 
     // retract to safe plane
@@ -1227,15 +1238,19 @@ function onLinear(_x, _y, _z, feed) {
   if (x || y || z) {
     if (pendingRadiusCompensation >= 0) {
       pendingRadiusCompensation = -1;
+      var d = tool.diameterOffset;
+      if (d > 99) {
+        warning(localize("The diameter offset exceeds the maximum value."));
+      }
       writeBlock(gPlaneModal.format(17));
       switch (radiusCompensation) {
       case RADIUS_COMPENSATION_LEFT:
         pOutput.reset();
-        writeBlock(gMotionModal.format(1), gFormat.format(41), x, y, z, f, pOutput.format(tool.diameter));
+        writeBlock(gMotionModal.format(1), gFormat.format(41), x, y, z, f, dOutput.format(d));
         break;
       case RADIUS_COMPENSATION_RIGHT:
         pOutput.reset();
-        writeBlock(gMotionModal.format(1), gFormat.format(42), x, y, z, f, pOutput.format(tool.diameter));
+        writeBlock(gMotionModal.format(1), gFormat.format(42), x, y, z, f, dOutput.format(d));
         break;
       default:
         writeBlock(gMotionModal.format(1), gFormat.format(40), x, y, z, f);
@@ -1317,6 +1332,7 @@ function onLinear5D(_x, _y, _z, _a, _b, _c, feed) {
 /***** 'previousABC' can be added throughout to maintain previous rotary positions. Required for Mill/Turn machines. *****/
 /***** 'headOffset' should be defined when a head rotary axis is defined. *****/
 /***** The feedrate mode must be included in motion block output (linear, circular, etc.) for Inverse Time feedrate support. *****/
+var dpmBPW = 0.1; // ratio of rotary accuracy to linear accuracy for DPM calculations
 var inverseTimeUnits = 1.0; // 1.0 = minutes, 60.0 = seconds
 var maxInverseTime = 999999.9999; // maximum value to output for Inverse Time feeds
 var maxDPM = 9999.99; // maximum value to output for DPM feeds
