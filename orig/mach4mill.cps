@@ -4,8 +4,8 @@
 
   Mach4Mill post processor configuration.
 
-  $Revision: 43027 f4d85eaf905595998240b6a851ef217e44a4109a $
-  $Date: 2020-11-17 17:40:56 $
+  $Revision: 43062 24e8b3f984ca0398004b82f38d16452abbe0cd9b $
+  $Date: 2020-12-10 06:39:45 $
   
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -683,7 +683,7 @@ function subprogramIsValid(_section, _patternId, _patternType) {
           patternBox[0] = getFramePosition(tempBox[0]);
           patternBox[1] = getFramePosition(tempBox[1]);
 
-          if (areSpatialBoxesSame(masterPosition, patternPosition) && areSpatialBoxesSame(masterBox, patternBox)) {
+          if (areSpatialBoxesSame(masterPosition, patternPosition) && areSpatialBoxesSame(masterBox, patternBox) && !section.isMultiAxis()) {
             incrementalSubprogram = incrementalSubprogram ? incrementalSubprogram : false;
           } else if (!areSpatialBoxesTranslated(masterPosition, patternPosition) || !areSpatialBoxesTranslated(masterBox, patternBox)) {
             validSubprogram = false;
