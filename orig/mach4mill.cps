@@ -4,8 +4,8 @@
 
   Mach4Mill post processor configuration.
 
-  $Revision: 43151 08c79bb5b30997ccb5fb33ab8e7c8c26981be334 $
-  $Date: 2021-02-19 00:25:13 $
+  $Revision: 43212 a0ad65b7730a428b5f2864ce5834aeca2098d9d5 $
+  $Date: 2021-04-07 16:43:00 $
   
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -133,23 +133,15 @@ properties = {
   },
   useSubroutines: {
     title: "Use subroutines",
-    description: "Specifies that subroutines per each operation should be generated.",
-    type: "boolean",
-    value: false,
-    scope: "post"
-  },
-  useSubroutinePatterns: {
-    title: "Use subroutine patterns",
-    description: "Generates subroutines for patterned operation.",
-    type: "boolean",
-    value: false,
-    scope: "post"
-  },
-  useSubroutineCycles: {
-    title: "Use subroutine cycles",
-    description: "Generates subroutines for cycle operations on same holes.",
-    type: "boolean",
-    value: false,
+    description: "Select your desired subroutine option. 'All Operations' creates subroutines per each operation, 'Cycles' creates subroutines for cycle operations on same holes, and 'Patterns' creates subroutines for patterned operations.",
+    type: "enum",
+    values: [
+      {title: "No", id: "none"},
+      {title: "All Operartions", id: "allOperations"},
+      {title: "Cycles", id: "cycles"},
+      {title: "Patterns", id: "patterns"}
+    ],
+    value: "none",
     scope: "post"
   },
   useRigidTapping: {
@@ -603,7 +595,7 @@ function subprogramDefine(_initialPosition, _abc, _retracted, _zIsOutput) {
   // convert patterns into subprograms
   var usePattern = false;
   patternIsActive = false;
-  if (currentSection.isPatterned && currentSection.isPatterned() && getProperty("useSubroutinePatterns")) {
+  if (currentSection.isPatterned && currentSection.isPatterned() && (getProperty("useSubroutines") == "patterns")) {
     currentPattern = currentSection.getPatternId();
     firstPattern = true;
     for (var i = 0; i < definedPatterns.length; ++i) {
@@ -651,7 +643,7 @@ function subprogramDefine(_initialPosition, _abc, _retracted, _zIsOutput) {
   }
 
   // Output cycle operation as subprogram
-  if (!usePattern && getProperty("useSubroutineCycles") && currentSection.doesStrictCycle &&
+  if (!usePattern && (getProperty("useSubroutines") == "cycles") && currentSection.doesStrictCycle &&
       (currentSection.getNumberOfCycles() == 1) && currentSection.getNumberOfCyclePoints() >= minimumCyclePoints) {
     var finalPosition = getFramePosition(currentSection.getFinalPosition());
     currentPattern = currentSection.getNumberOfCyclePoints();
@@ -686,7 +678,7 @@ function subprogramDefine(_initialPosition, _abc, _retracted, _zIsOutput) {
   }
 
   // Output each operation as a subprogram
-  if (!usePattern && getProperty("useSubroutines")) {
+  if (!usePattern && (getProperty("useSubroutines") == "allOperations")) {
     currentSubprogram = ++lastSubprogram;
     writeBlock(mFormat.format(98), "P" + oFormat.format(currentSubprogram));
     firstPattern = true;
@@ -787,7 +779,11 @@ function subprogramIsValid(_section, _patternId, _patternType) {
 
 function setAxisMode(_format, _output, _prefix, _value, _incr) {
   var i = _output.isEnabled();
-  _output = _incr ? createIncrementalVariable({prefix: _prefix}, _format) : createVariable({prefix: _prefix}, _format);
+  if (_output == zOutput) {
+    _output = _incr ? createIncrementalVariable({onchange: function() {retracted = false;}, prefix: _prefix}, _format) : createVariable({onchange: function() {retracted = false;}, prefix: _prefix}, _format);
+  } else {
+    _output = _incr ? createIncrementalVariable({prefix: _prefix}, _format) : createVariable({prefix: _prefix}, _format);
+  }
   _output.format(_value);
   _output.format(_value);
   i = i ? _output.enable() : _output.disable();
