@@ -4,8 +4,8 @@
 
   Mach4Mill post processor configuration.
 
-  $Revision: 43759 a148639d401c1626f2873b948fb6d996d3bc60aa $
-  $Date: 2022-04-12 21:31:49 $
+  $Revision: 43811 9402f830a000e97e8885d344dcc12dc65bf77998 $
+  $Date: 2022-05-20 14:56:40 $
 
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -83,11 +83,16 @@ properties = {
   },
   showSequenceNumbers: {
     title      : "Use sequence numbers",
-    description: "Use sequence numbers for each block of outputted code.",
+    description: "'Yes' outputs sequence numbers on each block, 'Only on tool change' outputs sequence numbers on tool change blocks only, and 'No' disables the output of sequence numbers.",
     group      : "formats",
-    type       : "boolean",
-    value      : false,
-    scope      : "post"
+    type       : "enum",
+    values     : [
+      {title:"Yes", id:"true"},
+      {title:"No", id:"false"},
+      {title:"Only on tool change", id:"toolChange"}
+    ],
+    value: "false",
+    scope: "post"
   },
   sequenceNumberStart: {
     title      : "Start sequence number",
@@ -271,7 +276,7 @@ function writeBlock() {
   if (!text) {
     return;
   }
-  if (getProperty("showSequenceNumbers")) {
+  if (getProperty("showSequenceNumbers") == "true") {
     writeWords2(nFormat.format(sequenceNumber % 100000), arguments);
     sequenceNumber += getProperty("sequenceNumberIncrement");
   } else {
@@ -281,6 +286,16 @@ function writeBlock() {
 
 function formatComment(text) {
   return "(" + filterText(String(text).toUpperCase(), permittedCommentChars) + ")";
+}
+
+/**
+  Writes the specified block - used for tool changes only.
+*/
+function writeToolBlock() {
+  var show = getProperty("showSequenceNumbers");
+  setProperty("showSequenceNumbers", (show == "true" || show == "toolChange") ? "true" : "false");
+  writeBlock(arguments);
+  setProperty("showSequenceNumbers", show);
 }
 
 /**
@@ -716,7 +731,7 @@ function subprogramStart(_initialPosition, _abc, _incremental) {
     conditional(comment, formatComment(comment.substr(0, maximumLineLength - 2 - 6 - 1)))
   );
   saveShowSequenceNumbers = getProperty("showSequenceNumbers");
-  setProperty("showSequenceNumbers", false);
+  setProperty("showSequenceNumbers", "false");
   if (_incremental) {
     setIncrementalMode(_initialPosition, _abc);
   }
@@ -890,10 +905,10 @@ function onSection() {
     }
 
     if (getProperty("useM06")) {
-      writeBlock("T" + toolFormat.format(tool.number), mFormat.format(6));
+      writeToolBlock("T" + toolFormat.format(tool.number), mFormat.format(6));
     } else {
       writeBlock(mFormat.format(0), formatComment(localize("CHANGE TOOL")));
-      writeBlock("T" + toolFormat.format(tool.number));
+      writeToolBlock("T" + toolFormat.format(tool.number));
     }
     if (tool.comment) {
       writeComment(tool.comment);
