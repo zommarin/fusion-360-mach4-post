@@ -4,8 +4,8 @@
 
   Mach4Mill post processor configuration.
 
-  $Revision: 43710 be9c82391145c95b055a2993a4d90669fd20eec1 $
-  $Date: 2022-03-16 20:05:39 $
+  $Revision: 43751 478f4bd6abaa459ecddee0a6c48d45726439bc90 $
+  $Date: 2022-04-07 17:33:18 $
 
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -884,6 +884,7 @@ function onSection() {
     if (getProperty("useM6")) {
       writeBlock("T" + toolFormat.format(tool.number), mFormat.format(6));
     } else {
+      writeBlock(mFormat.format(0), formatComment(localize("CHANGE TOOL")));
       writeBlock("T" + toolFormat.format(tool.number));
     }
     if (tool.comment) {
