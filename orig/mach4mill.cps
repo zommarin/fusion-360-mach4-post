@@ -4,8 +4,8 @@
 
   Mach4Mill post processor configuration.
 
-  $Revision: 43554 a19c569c9f7fe055fc222095112d3f1eebc74b63 $
-  $Date: 2021-12-02 17:56:05 $
+  $Revision: 43694 6d5119754986a2c605f6c43a8688a99f5a74a125 $
+  $Date: 2022-03-09 19:54:53 $
 
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -163,7 +163,7 @@ wcsDefinitions = {
   useZeroOffset: false,
   wcs          : [
     {name:"Standard", format:"G", range:[54, 59]},
-    {name:"Extended", format:"G59 P", range:[1, 254]}
+    {name:"Extended", format:"G54.1 P", range:[1, 248]}
   ]
 };
 
