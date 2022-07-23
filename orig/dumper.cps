@@ -4,9 +4,9 @@
 
   Dump configuration.
 
-  $Revision: 43151 08c79bb5b30997ccb5fb33ab8e7c8c26981be334 $
-  $Date: 2021-02-19 00:25:13 $
-  
+  $Revision: 43860 75e57c11b1776d92a4f0e9b7767ca04314479c85 $
+  $Date: 2022-07-01 20:29:59 $
+
   FORKID {4E9DFE89-DA1C-4531-98C9-7FECF672BD47}
 */
 
@@ -18,7 +18,7 @@ certificationLevel = 2;
 
 longDescription = "Use this post to understand which information is available when developing a new post. The post will output the primary information for each entry function being called.";
 
-extension = "tap";
+extension = "dmp";
 // using user code page
 
 capabilities = CAPABILITY_INTERMEDIATE;
@@ -34,39 +34,39 @@ maximumCircularRadius = spatial(1000000, MM);
 // user-defined properties
 properties = {
   showParameters: {
-    title: "Show Parameter values",
+    title      : "Show Parameter values",
     description: "If enabled, all Parameter values will be displayed",
-    type: "boolean",
-    value: true,
-    scope: "post"
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
   },
   showTool: {
-    title: "Show Tool values",
+    title      : "Show Tool values",
     description: "If enabled, all Tool values will be displayed",
-    type: "boolean",
-    value: true,
-    scope: "post"
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
   },
   showState: {
-    title: "Show state",
+    title      : "Show state",
     description: "Shows the commonly interesting current state.",
-    type: "boolean",
-    value: true,
-    scope: "post"
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
   },
   expandCycles: {
-    title: "Expand cycles",
+    title      : "Expand cycles",
     description: "If enabled, unhandled cycles are expanded.",
-    type: "boolean",
-    value: true,
-    scope: "post"
+    type       : "boolean",
+    value      : true,
+    scope      : "post"
   },
   showTCP: {
-    title: "Show TCP values",
+    title      : "Show TCP values",
     description: "If enabled, XYZ positions are shown in the Setup system.  Disable to show the coordinates in the Working Plane system",
-    type: "boolean",
-    value: false,
-    scope: "post"
+    type       : "boolean",
+    value      : false,
+    scope      : "post"
   }
 };
 
@@ -277,8 +277,16 @@ function onProbe() {
   dump("onProbe", arguments);
 }
 
+function onLiveAlignment() {
+  dump("onLiveAlignment", arguments);
+}
+
 function onSpindleSpeed() {
   dump("onSpindleSpeed", arguments);
+}
+
+function onOrientateSpindle() {
+  dump("onOrientateSpindle", arguments);
 }
 
 function onParameter() {
@@ -400,6 +408,8 @@ function getMovementStringId(movement, jet) {
     return "finish cut";
   case MOVEMENT_HIGH_FEED:
     return "high feed";
+  case MOVEMENT_DEPOSITING:
+    return "depositing";
   default:
     return String(movement);
   }
@@ -486,6 +496,12 @@ function getToolTypeStringId(toolType) {
     return "TOOL_MARKER";
   case TOOL_MILLING_THREAD:
     return "TOOL_MILLING_THREAD";
+  case TOOL_DEPOSITING_ELECTRIC_ARC_WIRE:
+    return "TOOL_DEPOSITING_ELECTRIC_ARC_WIRE";
+  case TOOL_DEPOSITING_LASER_POWDER:
+    return "TOOL_DEPOSITING_LASER_POWDER";
+  case TOOL_DEPOSITING_LASER_WIRE:
+    return "TOOL_DEPOSITING_LASER_WIRE";
   default:
     return String(toolType);
   }
@@ -709,7 +725,7 @@ function getStrategyTypeString() {
 }
 
 function getJetModeTypeString(jetMode) {
-  
+
   switch (jetMode) {
   case JET_MODE_THROUGH:
     return "JET_MODE_THROUGH";
@@ -780,6 +796,9 @@ function onMovement(movement) {
   case MOVEMENT_PREDRILL:
     id = "MOVEMENT_PREDRILL";
     break;
+  case MOVEMENT_FINISH_CUTTING:
+    id = "MOVEMENT_FINISH_CUTTING";
+    break;
   case MOVEMENT_EXTENDED:
     id = "MOVEMENT_EXTENDED";
     break;
@@ -788,6 +807,9 @@ function onMovement(movement) {
     break;
   case MOVEMENT_HIGH_FEED:
     id = "MOVEMENT_HIGH_FEED";
+    break;
+  case MOVEMENT_DEPOSITING:
+    id = "MOVEMENT_DEPOSITING";
     break;
   }
   if (id != undefined) {
@@ -934,6 +956,10 @@ function onFanSpeed(speed, id) {
 
 function onLayer() {
   dump("onLayer", arguments);
+}
+
+function onLayerEnd() {
+  dump("onLayerEnd", arguments);
 }
 
 function onLinearExtrude(_x, _y, _z, feed, extDist) {
