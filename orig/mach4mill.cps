@@ -1,11 +1,11 @@
 /**
-  Copyright (C) 2012-2020 by Autodesk, Inc.
+  Copyright (C) 2012-2021 by Autodesk, Inc.
   All rights reserved.
 
   Mach4Mill post processor configuration.
 
-  $Revision: 43062 24e8b3f984ca0398004b82f38d16452abbe0cd9b $
-  $Date: 2020-12-10 06:39:45 $
+  $Revision: 43151 08c79bb5b30997ccb5fb33ab8e7c8c26981be334 $
+  $Date: 2021-02-19 00:25:13 $
   
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -13,9 +13,9 @@
 description = "Mach4Mill";
 vendor = "Artsoft";
 vendorUrl = "http://www.machsupport.com";
-legal = "Copyright (C) 2012-2020 by Autodesk, Inc.";
+legal = "Copyright (C) 2012-2021 by Autodesk, Inc.";
 certificationLevel = 2;
-minimumRevision = 40783;
+minimumRevision = 45702;
 
 longDescription = "Generic milling post for Mach4.";
 
@@ -35,60 +35,134 @@ allowedCircularPlanes = undefined; // allow any circular motion
 
 // user-defined properties
 properties = {
-  writeMachine: true, // write machine
-  writeTools: true, // writes the tools
-  safePositionMethod: "G28", // specifies the desired safe position option
-  useM6: true, // disable to avoid M6 output - preload is also disabled when M6 is disabled
-  preloadTool: false, // preloads next tool on tool change if any
-  showSequenceNumbers: false, // show sequence numbers
-  sequenceNumberStart: 10, // first sequence number
-  sequenceNumberIncrement: 5, // increment for sequence numbers
-  optionalStop: true, // optional stop
-  separateWordsWithSpace: true, // specifies that the words should be separated with a white space
-  useRadius: false, // specifies that arcs should be output using the radius (R word) instead of the I, J, and K words.
-  dwellInSeconds: true, // specifies the unit for dwelling: true:seconds and false:milliseconds.
-  useSubroutines: false, // specifies that subroutines per each operation should be generated
-  useSubroutinePatterns: false, // generates subroutines for patterned operation
-  useSubroutineCycles: false, // generates subroutines for cycle operations on same holes
-  useRigidTapping: "yes" // output rigid tapping block
-};
-
-// user-defined property definitions
-propertyDefinitions = {
-  writeMachine: {title:"Write machine", description:"Output the machine settings in the header of the code.", group:0, type:"boolean"},
-  writeTools: {title:"Write tool list", description:"Output a tool list in the header of the code.", group:0, type:"boolean"},
+  writeMachine: {
+    title: "Write machine",
+    description: "Output the machine settings in the header of the code.",
+    group: 0,
+    type: "boolean",
+    value: true,
+    scope: "post"
+  },
+  writeTools: {
+    title: "Write tool list",
+    description: "Output a tool list in the header of the code.",
+    group: 0,
+    type: "boolean",
+    value: true,
+    scope: "post"
+  },
   safePositionMethod: {
     title: "Safe Retracts",
     description: "Select your desired retract option. 'Clearance Height' retracts to the operation clearance height.",
     type: "enum",
-    values:[
-      {title:"G28", id: "G28"},
-      {title:"G53", id: "G53"},
-      {title:"Clearance Height", id: "clearanceHeight"},
-      {title:"G30", id: "G30"}
-    ]
+    values: [
+      {title: "G28", id: "G28"},
+      {title: "G53", id: "G53"},
+      {title: "Clearance Height", id: "clearanceHeight"},
+      {title: "G30", id: "G30"}
+    ],
+    value: "G28",
+    scope: "post"
   },
-  useM6: {title:"Use M6", description:"Disable to avoid outputting M6. If disabled Preload is also disabled", group:1, type:"boolean"},
-  preloadTool: {title:"Preload tool", description:"Preloads the next tool at a tool change (if any).", type:"boolean"},
-  showSequenceNumbers: {title:"Use sequence numbers", description:"Use sequence numbers for each block of outputted code.", group:1, type:"boolean"},
-  sequenceNumberStart: {title:"Start sequence number", description:"The number at which to start the sequence numbers.", group:1, type:"integer"},
-  sequenceNumberIncrement: {title:"Sequence number increment", description:"The amount by which the sequence number is incremented by in each block.", group:1, type:"integer"},
-  optionalStop: {title:"Optional stop", description:"Outputs optional stop code during when necessary in the code.", type:"boolean"},
-  separateWordsWithSpace: {title:"Separate words with space", description:"Adds spaces between words if 'yes' is selected.", type:"boolean"},
-  useRadius: {title:"Radius arcs", description:"If yes is selected, arcs are outputted using radius values rather than IJK.", type:"boolean"},
-  dwellInSeconds: {title:"Dwell in seconds", description:"Specifies the unit for dwelling, set to 'Yes' for seconds and 'No' for milliseconds.", type:"boolean"},
-  useSubroutines: {title:"Use subroutines", description:"Specifies that subroutines per each operation should be generated.", type:"boolean"},
-  useSubroutinePatterns: {title:"Use subroutine patterns", description:"Generates subroutines for patterned operation.", type:"boolean"},
-  useSubroutineCycles: {title:"Use subroutine cycles", description:"Generates subroutines for cycle operations on same holes.", type:"boolean"},
+  useM6: {
+    title: "Use M6",
+    description: "Disable to avoid outputting M6. If disabled Preload is also disabled",
+    group: 1,
+    type: "boolean",
+    value: true,
+    scope: "post"
+  },
+  preloadTool: {
+    title: "Preload tool",
+    description: "Preloads the next tool at a tool change (if any).",
+    type: "boolean",
+    value: false,
+    scope: "post"
+  },
+  showSequenceNumbers: {
+    title: "Use sequence numbers",
+    description: "Use sequence numbers for each block of outputted code.",
+    group: 1,
+    type: "boolean",
+    value: false,
+    scope: "post"
+  },
+  sequenceNumberStart: {
+    title: "Start sequence number",
+    description: "The number at which to start the sequence numbers.",
+    group: 1,
+    type: "integer",
+    value: 10,
+    scope: "post"
+  },
+  sequenceNumberIncrement: {
+    title: "Sequence number increment",
+    description: "The amount by which the sequence number is incremented by in each block.",
+    group: 1,
+    type: "integer",
+    value: 5,
+    scope: "post"
+  },
+  optionalStop: {
+    title: "Optional stop",
+    description: "Outputs optional stop code during when necessary in the code.",
+    type: "boolean",
+    value: true,
+    scope: "post"
+  },
+  separateWordsWithSpace: {
+    title: "Separate words with space",
+    description: "Adds spaces between words if 'yes' is selected.",
+    type: "boolean",
+    value: true,
+    scope: "post"
+  },
+  useRadius: {
+    title: "Radius arcs",
+    description: "If yes is selected, arcs are outputted using radius values rather than IJK.",
+    type: "boolean",
+    value: false,
+    scope: "post"
+  },
+  dwellInSeconds: {
+    title: "Dwell in seconds",
+    description: "Specifies the unit for dwelling, set to 'Yes' for seconds and 'No' for milliseconds.",
+    type: "boolean",
+    value: true,
+    scope: "post"
+  },
+  useSubroutines: {
+    title: "Use subroutines",
+    description: "Specifies that subroutines per each operation should be generated.",
+    type: "boolean",
+    value: false,
+    scope: "post"
+  },
+  useSubroutinePatterns: {
+    title: "Use subroutine patterns",
+    description: "Generates subroutines for patterned operation.",
+    type: "boolean",
+    value: false,
+    scope: "post"
+  },
+  useSubroutineCycles: {
+    title: "Use subroutine cycles",
+    description: "Generates subroutines for cycle operations on same holes.",
+    type: "boolean",
+    value: false,
+    scope: "post"
+  },
   useRigidTapping: {
     title: "Use rigid tapping",
     description: "Select 'Yes' to enable, 'No' to disable, or 'Without spindle direction' to enable rigid tapping without outputting the spindle direction block.",
     type: "enum",
-    values:[
-      {title:"Yes", id:"yes"},
-      {title:"No", id:"no"},
-      {title:"Without spindle direction", id:"without"}
-    ]
+    values: [
+      {title: "Yes", id: "yes"},
+      {title: "No", id: "no"},
+      {title: "Without spindle direction", id: "without"}
+    ],
+    value: "yes",
+    scope: "post"
   }
 };
 
@@ -186,9 +260,9 @@ function writeBlock() {
   if (!text) {
     return;
   }
-  if (properties.showSequenceNumbers) {
+  if (getProperty("showSequenceNumbers")) {
     writeWords2(nFormat.format(sequenceNumber % 100000), arguments);
-    sequenceNumber += properties.sequenceNumberIncrement;
+    sequenceNumber += getProperty("sequenceNumberIncrement");
   } else {
     writeWords(arguments);
   }
@@ -206,7 +280,7 @@ function writeComment(text) {
 }
 
 function onOpen() {
-  if (properties.useRadius) {
+  if (getProperty("useRadius")) {
     maximumCircularSweep = toRad(90); // avoid potential center calculation errors for CNC
   }
 
@@ -228,11 +302,11 @@ function onOpen() {
     cOutput.disable();
   }
   
-  if (!properties.separateWordsWithSpace) {
+  if (!getProperty("separateWordsWithSpace")) {
     setWordSeparator("");
   }
 
-  sequenceNumber = properties.sequenceNumberStart;
+  sequenceNumber = getProperty("sequenceNumberStart");
 
   if (programName) {
     writeComment(programName);
@@ -248,7 +322,7 @@ function onOpen() {
   var model = machineConfiguration.getModel();
   var description = machineConfiguration.getDescription();
 
-  if (properties.writeMachine && (vendor || model || description)) {
+  if (getProperty("writeMachine") && (vendor || model || description)) {
     writeComment(localize("Machine"));
     if (vendor) {
       writeComment("  " + localize("vendor") + ": " + vendor);
@@ -262,7 +336,7 @@ function onOpen() {
   }
 
   // dump tool information
-  if (properties.writeTools) {
+  if (getProperty("writeTools")) {
     var zRanges = {};
     if (is3D()) {
       var numberOfSections = getNumberOfSections();
@@ -529,7 +603,7 @@ function subprogramDefine(_initialPosition, _abc, _retracted, _zIsOutput) {
   // convert patterns into subprograms
   var usePattern = false;
   patternIsActive = false;
-  if (currentSection.isPatterned && currentSection.isPatterned() && properties.useSubroutinePatterns) {
+  if (currentSection.isPatterned && currentSection.isPatterned() && getProperty("useSubroutinePatterns")) {
     currentPattern = currentSection.getPatternId();
     firstPattern = true;
     for (var i = 0; i < definedPatterns.length; ++i) {
@@ -577,7 +651,7 @@ function subprogramDefine(_initialPosition, _abc, _retracted, _zIsOutput) {
   }
 
   // Output cycle operation as subprogram
-  if (!usePattern && properties.useSubroutineCycles && currentSection.doesStrictCycle &&
+  if (!usePattern && getProperty("useSubroutineCycles") && currentSection.doesStrictCycle &&
       (currentSection.getNumberOfCycles() == 1) && currentSection.getNumberOfCyclePoints() >= minimumCyclePoints) {
     var finalPosition = getFramePosition(currentSection.getFinalPosition());
     currentPattern = currentSection.getNumberOfCyclePoints();
@@ -612,7 +686,7 @@ function subprogramDefine(_initialPosition, _abc, _retracted, _zIsOutput) {
   }
 
   // Output each operation as a subprogram
-  if (!usePattern && properties.useSubroutines) {
+  if (!usePattern && getProperty("useSubroutines")) {
     currentSubprogram = ++lastSubprogram;
     writeBlock(mFormat.format(98), "P" + oFormat.format(currentSubprogram));
     firstPattern = true;
@@ -630,8 +704,8 @@ function subprogramStart(_initialPosition, _abc, _incremental) {
     "O" + oFormat.format(currentSubprogram) +
     conditional(comment, formatComment(comment.substr(0, maximumLineLength - 2 - 6 - 1)))
   );
-  saveShowSequenceNumbers = properties.showSequenceNumbers;
-  properties.showSequenceNumbers = false;
+  saveShowSequenceNumbers = getProperty("showSequenceNumbers");
+  setProperty("showSequenceNumbers", false);
   if (_incremental) {
     setIncrementalMode(_initialPosition, _abc);
   }
@@ -647,7 +721,7 @@ function subprogramEnd() {
   }
   forceAny();
   firstPattern = false;
-  properties.showSequenceNumbers = saveShowSequenceNumbers;
+  setProperty("showSequenceNumbers", saveShowSequenceNumbers);
   closeRedirection();
 }
 
@@ -792,7 +866,7 @@ function onSection() {
     onCommand(COMMAND_STOP_SPINDLE);
     setCoolant(COOLANT_OFF);
   
-    if (!isFirstSection() && properties.optionalStop) {
+    if (!isFirstSection() && getProperty("optionalStop")) {
       onCommand(COMMAND_OPTIONAL_STOP);
     }
 
@@ -800,7 +874,7 @@ function onSection() {
       warning(localize("Tool number exceeds maximum value."));
     }
 
-    if (properties.useM6) {
+    if (getProperty("useM6")) {
       writeBlock("T" + toolFormat.format(tool.number), mFormat.format(6));
     } else {
       writeBlock("T" + toolFormat.format(tool.number));
@@ -825,7 +899,7 @@ function onSection() {
       }
     }
 
-    if (properties.preloadTool && properties.useM6) {
+    if (getProperty("preloadTool") && getProperty("useM6")) {
       var nextTool = getNextTool(tool.number);
       if (nextTool) {
         writeBlock("T" + toolFormat.format(nextTool.number));
@@ -856,7 +930,7 @@ function onSection() {
       (getParameter("operation:cycleType") == "right-tapping") ||
       (getParameter("operation:cycleType") == "left-tapping") ||
       (getParameter("operation:cycleType") == "tapping-with-chip-breaking"));
-    if (!tapping || (tapping && !(properties.useRigidTapping == "without"))) {
+    if (!tapping || (tapping && !(getProperty("useRigidTapping") == "without"))) {
       writeBlock(
         sOutput.format(spindleSpeed), mFormat.format(tool.clockwise ? 3 : 4)
       );
@@ -952,7 +1026,7 @@ function onDwell(seconds) {
   if (seconds > 99999.999) {
     warning(localize("Dwelling time is out of range."));
   }
-  if (properties.dwellInSeconds) {
+  if (getProperty("dwellInSeconds")) {
     writeBlock(gFormat.format(4), "P" + secFormat.format(seconds));
   } else {
     milliseconds = clamp(1, seconds * 1000, 99999999);
@@ -1063,7 +1137,7 @@ function onCyclePoint(x, y, z) {
         expandCyclePoint(x, y, z);
       } else {
         F = tool.getThreadPitch() * rpmFormat.getResultingValue(spindleSpeed);
-        if (properties.useRigidTapping != "no") {
+        if (getProperty("useRigidTapping") != "no") {
           writeBlock(mFormat.format(29), sOutput.format(spindleSpeed));
         }
         writeBlock(
@@ -1078,7 +1152,7 @@ function onCyclePoint(x, y, z) {
       break;
     case "right-tapping":
       F = tool.getThreadPitch() * rpmFormat.getResultingValue(spindleSpeed);
-      if (properties.useRigidTapping != "no") {
+      if (getProperty("useRigidTapping") != "no") {
         writeBlock(mFormat.format(29), sOutput.format(spindleSpeed));
       }
       writeBlock(
@@ -1337,7 +1411,7 @@ function onLinear5D(_x, _y, _z, _a, _b, _c, feed) {
 }
 
 // Start of multi-axis feedrate logic
-/***** You can add 'properties.useInverseTime' if desired. *****/
+/***** You can add 'getProperty("useInverseTime'") if desired. *****/
 /***** 'previousABC' can be added throughout to maintain previous rotary positions. Required for Mill/Turn machines. *****/
 /***** 'headOffset' should be defined when a head rotary axis is defined. *****/
 /***** The feedrate mode must be included in motion block output (linear, circular, etc.) for Inverse Time feedrate support. *****/
@@ -1600,7 +1674,7 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
   var start = getCurrentPosition();
 
   if (isFullCircle()) {
-    if (properties.useRadius || isHelical()) { // radius mode does not support full arcs
+    if (getProperty("useRadius") || isHelical()) { // radius mode does not support full arcs
       linearize(tolerance);
       return;
     }
@@ -1617,7 +1691,7 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
     default:
       linearize(tolerance);
     }
-  } else if (!properties.useRadius) {
+  } else if (!getProperty("useRadius")) {
     switch (getCircularPlane()) {
     case PLANE_XY:
       writeBlock(gFeedModeModal.format(94), gPlaneModal.format(17), gMotionModal.format(clockwise ? 2 : 3), xOutput.format(x), yOutput.format(y), zOutput.format(z), iOutput.format(cx - start.x, 0), jOutput.format(cy - start.y, 0), feedOutput.format(feed));
@@ -1807,7 +1881,7 @@ function onSectionEnd() {
 function writeRetract() {
   var words = []; // store all retracted axes in an array
   var retractAxes = new Array(false, false, false);
-  var method = properties.safePositionMethod;
+  var method = getProperty("safePositionMethod");
   if (method == "clearanceHeight") {
     if (!is3D()) {
       error(localize("Retract option 'Clearance Height' is not supported for multi-axis machining."));
@@ -1906,4 +1980,8 @@ function onClose() {
     writeln("");
     write(subprograms);
   }
+}
+
+function setProperty(property, value) {
+  properties[property].current = value;
 }
