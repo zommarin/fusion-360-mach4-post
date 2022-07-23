@@ -1,11 +1,11 @@
 /**
-  Copyright (C) 2012-2019 by Autodesk, Inc.
+  Copyright (C) 2012-2020 by Autodesk, Inc.
   All rights reserved.
 
   Mach4Mill post processor configuration.
 
-  $Revision: 42457 5bb5ded34020f26b3aa0bb54b5c3c6b888359b7d $
-  $Date: 2019-08-28 08:19:00 $
+  $Revision: 42686 5c1fa50acdb1bb63ef5f7fa14280f184facca587 $
+  $Date: 2020-03-09 16:22:50 $
   
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -13,7 +13,7 @@
 description = "Mach4Mill";
 vendor = "Artsoft";
 vendorUrl = "http://www.machsupport.com";
-legal = "Copyright (C) 2012-2019 by Autodesk, Inc.";
+legal = "Copyright (C) 2012-2020 by Autodesk, Inc.";
 certificationLevel = 2;
 minimumRevision = 40783;
 
@@ -33,13 +33,11 @@ maximumCircularSweep = toRad(180);
 allowHelicalMoves = true;
 allowedCircularPlanes = undefined; // allow any circular motion
 
-
-
 // user-defined properties
 properties = {
   writeMachine: true, // write machine
   writeTools: true, // writes the tools
-  useG28: "true", // disable to avoid G28 output for safe machine retracts - when disabled you must manually ensure safe retracts
+  useG28: "true", // specifies the desired safe retract option
   useM6: true, // disable to avoid M6 output - preload is also disabled when M6 is disabled
   preloadTool: false, // preloads next tool on tool change if any
   showSequenceNumbers: false, // show sequence numbers
@@ -60,13 +58,14 @@ propertyDefinitions = {
   writeMachine: {title:"Write machine", description:"Output the machine settings in the header of the code.", group:0, type:"boolean"},
   writeTools: {title:"Write tool list", description:"Output a tool list in the header of the code.", group:0, type:"boolean"},
   useG28: {
-    title: "G28 Safe Retracts",
-    description: "Disable to avoid G28 output for safe machine retracts. Set to 'Use G30' to enable G30 safe positioning.  When disabled, you must manually ensure safe retracts.",
+    title: "Safe Retracts",
+    description: "Select your desired retract option. 'Clearance Height' retracts to the operation clearance height.",
     type: "enum",
     values:[
-      {title:"Yes", id:"true"},
-      {title:"No", id:"false"},
-      {title:"Use G30", id:"useG30"}
+      {title:"G28", id:"true"},
+      {title:"G53", id:"false"},
+      {title:"G30", id:"useG30"},
+      {title:"Clearance Height", id:"clearanceHeight"}
     ]
   },
   useM6: {title:"Use M6", description:"Disable to avoid outputting M6. If disabled Preload is also disabled", group:1, type:"boolean"},
@@ -709,7 +708,7 @@ function subprogramIsValid(_section, _patternId, _patternType) {
   }
   setRotation(rotation);
   setTranslation(translation);
-  return(validSubprogram);
+  return (validSubprogram);
 }
 
 function setAxisMode(_format, _output, _prefix, _value, _incr) {
@@ -1584,7 +1583,7 @@ function getMoveLength(_x, _y, _z, _a, _b, _c) {
   if (false) {
     writeComment("DEBUG - tool   = " + moveLength.tool);
     writeComment("DEBUG - xyz    = " + moveLength.xyz);
-    var temp = Vector.product(moveLength.abc, 180/Math.PI);
+    var temp = Vector.product(moveLength.abc, 180 / Math.PI);
     writeComment("DEBUG - abc    = " + temp);
     writeComment("DEBUG - radius = " + moveLength.radius);
   }
@@ -1806,73 +1805,71 @@ function onSectionEnd() {
 
 /** Output block to do safe retract and/or move to home position. */
 function writeRetract() {
-  // initialize routine
+  var words = []; // store all retracted axes in an array
   var _xyzMoved = new Array(false, false, false);
-  var _useG28 = properties.useG28 != "false"; // can be true, false, or useG30
+  var _useG28 = false;
 
-  // check syntax of call
+  if (properties.useG28 == "true" || properties.useG28 == "useG30") {
+    _useG28 = true;
+  } else if (properties.useG28 == "clearanceHeight") {
+    if (!is3D()) {
+      error(localize("Retract option 'Clearance Height' is not supported for multi-axis machining."));
+    }
+    return; // G28 and G53 output is not desired
+  }
+
   if (arguments.length == 0) {
     error(localize("No axis specified for writeRetract()."));
     return;
   }
-  for (var i = 0; i < arguments.length; ++i) {
-    if ((arguments[i] < 0) || (arguments[i] > 2)) {
-      error(localize("Bad axis specified for writeRetract()."));
-      return;
-    }
-    if (_xyzMoved[arguments[i]]) {
-      error(localize("Cannot retract the same axis twice in one line"));
-      return;
-    }
+  for (i in arguments) {
     _xyzMoved[arguments[i]] = true;
   }
-  
+  if ((_xyzMoved[0] || _xyzMoved[1]) && !retracted) { // retract Z first before moving to X/Y home
+    error(localize("Retracting in X/Y is not possible without being retracted in Z."));
+    return;
+  }
+
   // special conditions
-  if (!_useG28 && _xyzMoved[2] && (_xyzMoved[0] || _xyzMoved[1])) { // Z doesn't use G53
-    error(localize("You cannot move home in XY & Z in the same block."));
-    return;
+  /*
+  if (_xyzMoved[2]) { // Z doesn't use G53
+    _useG28 = true;
   }
-  if (_xyzMoved[2] && !_useG28) {
-    return;
-  }
+  */
 
   // define home positions
   var _xHome;
   var _yHome;
   var _zHome;
   if (_useG28) {
-    _xHome = 0;
-    _yHome = 0;
-    _zHome = 0;
+    _xHome = toPreciseUnit(0, MM);
+    _yHome = toPreciseUnit(0, MM);
+    _zHome = toPreciseUnit(0, MM);
   } else {
-    _xHome = machineConfiguration.hasHomePositionX() ? machineConfiguration.getHomePositionX() : 0;
-    _yHome = machineConfiguration.hasHomePositionY() ? machineConfiguration.getHomePositionY() : 0;
-    _zHome = machineConfiguration.getRetractPlane();
+    _xHome = machineConfiguration.hasHomePositionX() ? machineConfiguration.getHomePositionX() : toPreciseUnit(0, MM);
+    _yHome = machineConfiguration.hasHomePositionY() ? machineConfiguration.getHomePositionY() : toPreciseUnit(0, MM);
+    _zHome = machineConfiguration.getRetractPlane() != 0 ? machineConfiguration.getRetractPlane() : toPreciseUnit(0, MM);
   }
-
-  // format home positions
-  var words = []; // store all retracted axes in an array
   for (var i = 0; i < arguments.length; ++i) {
-    // define the axes to move
     switch (arguments[i]) {
     case X:
-      if (machineConfiguration.hasHomePositionX() || _useG28) {
-        words.push("X" + xyzFormat.format(_xHome));
-      }
+      words.push("X" + xyzFormat.format(_xHome));
+      xOutput.reset();
       break;
     case Y:
-      if (machineConfiguration.hasHomePositionY() || _useG28) {
-        words.push("Y" + xyzFormat.format(_yHome));
-      }
+      words.push("Y" + xyzFormat.format(_yHome));
+      yOutput.reset();
       break;
     case Z:
       words.push("Z" + xyzFormat.format(_zHome));
+      zOutput.reset();
       retracted = true;
       break;
+    default:
+      error(localize("Bad axis specified for writeRetract()."));
+      return;
     }
   }
-
-  // output move to home
   if (words.length > 0) {
     if (_useG28) {
       gAbsIncModal.reset();
@@ -1881,17 +1878,6 @@ function writeRetract() {
     } else {
       gMotionModal.reset();
       writeBlock(gAbsIncModal.format(90), gFormat.format(53), gMotionModal.format(0), words);
-    }
-
-    // force any axes that move to home on next block
-    if (_xyzMoved[0]) {
-      xOutput.reset();
-    }
-    if (_xyzMoved[1]) {
-      yOutput.reset();
-    }
-    if (_xyzMoved[2]) {
-      zOutput.reset();
     }
   }
 }
