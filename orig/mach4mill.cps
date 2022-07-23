@@ -4,8 +4,8 @@
 
   Mach4Mill post processor configuration.
 
-  $Revision: 43212 a0ad65b7730a428b5f2864ce5834aeca2098d9d5 $
-  $Date: 2021-04-07 16:43:00 $
+  $Revision: 43262 b8c9137bd3ef7bcc6437110256bba039137f5046 $
+  $Date: 2021-05-12 11:28:01 $
   
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -137,7 +137,7 @@ properties = {
     type: "enum",
     values: [
       {title: "No", id: "none"},
-      {title: "All Operartions", id: "allOperations"},
+      {title: "All Operations", id: "allOperations"},
       {title: "Cycles", id: "cycles"},
       {title: "Patterns", id: "patterns"}
     ],
