@@ -1,11 +1,11 @@
 /**
-  Copyright (C) 2012-2021 by Autodesk, Inc.
+  Copyright (C) 2012-2022 by Autodesk, Inc.
   All rights reserved.
 
   Mach4Mill post processor configuration.
 
-  $Revision: 43694 6d5119754986a2c605f6c43a8688a99f5a74a125 $
-  $Date: 2022-03-09 19:54:53 $
+  $Revision: 43710 be9c82391145c95b055a2993a4d90669fd20eec1 $
+  $Date: 2022-03-16 20:05:39 $
 
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -13,7 +13,7 @@
 description = "Mach4Mill";
 vendor = "Artsoft";
 vendorUrl = "http://www.machsupport.com";
-legal = "Copyright (C) 2012-2021 by Autodesk, Inc.";
+legal = "Copyright (C) 2012-2022 by Autodesk, Inc.";
 certificationLevel = 2;
 minimumRevision = 45702;
 
@@ -239,6 +239,7 @@ var SUB_CYCLE = 2;
 
 // collected state
 var sequenceNumber;
+var forceSpindleSpeed = false;
 var currentWorkOffset;
 var subprograms = [];
 var currentPattern = -1;
@@ -920,10 +921,12 @@ function onSection() {
     }
   }
 
-  if (insertToolCall ||
-      isFirstSection() ||
-      (rpmFormat.areDifferent(spindleSpeed, sOutput.getCurrent())) ||
-      (tool.clockwise != getPreviousSection().getTool().clockwise)) {
+  var spindleChanged = tool.type != TOOL_PROBE &&
+    (insertToolCall || forceSpindleSpeed || isFirstSection() ||
+    (rpmFormat.areDifferent(spindleSpeed, sOutput.getCurrent())) ||
+    (tool.clockwise != getPreviousSection().getTool().clockwise));
+  if (spindleChanged) {
+    forceSpindleSpeed = false;
     if (spindleSpeed < 1) {
       error(localize("Spindle speed out of range."));
       return;
@@ -1716,6 +1719,7 @@ function onCircular(clockwise, cx, cy, cz, x, y, z, feed) {
 
 var currentCoolantMode = COOLANT_OFF;
 var coolantOff = undefined;
+var forceCoolant = false;
 
 function setCoolant(coolant) {
   var coolantCodes = getCoolantCodes(coolant);
@@ -1740,10 +1744,10 @@ function getCoolantCodes(coolant) {
   if (tool.type == TOOL_PROBE) { // avoid coolant output for probing
     coolant = COOLANT_OFF;
   }
-  if (coolant == currentCoolantMode) {
+  if (coolant == currentCoolantMode && (!forceCoolant || coolant == COOLANT_OFF)) {
     return undefined; // coolant is already active
   }
-  if ((coolant != COOLANT_OFF) && (currentCoolantMode != COOLANT_OFF) && (coolantOff != undefined)) {
+  if ((coolant != COOLANT_OFF) && (currentCoolantMode != COOLANT_OFF) && (coolantOff != undefined) && !forceCoolant) {
     if (Array.isArray(coolantOff)) {
       for (var i in coolantOff) {
         multipleCoolantBlocks.push(coolantOff[i]);
@@ -1752,6 +1756,7 @@ function getCoolantCodes(coolant) {
       multipleCoolantBlocks.push(coolantOff);
     }
   }
+  forceCoolant = false;
 
   var m;
   var coolantCodes = {};
@@ -1801,8 +1806,6 @@ function getCoolantCodes(coolant) {
 }
 
 var mapCommand = {
-  COMMAND_STOP                    : 0,
-  COMMAND_OPTIONAL_STOP           : 1,
   COMMAND_END                     : 2,
   COMMAND_SPINDLE_CLOCKWISE       : 3,
   COMMAND_SPINDLE_COUNTERCLOCKWISE: 4,
@@ -1813,6 +1816,16 @@ var mapCommand = {
 
 function onCommand(command) {
   switch (command) {
+  case COMMAND_STOP:
+    writeBlock(mFormat.format(0));
+    forceSpindleSpeed = true;
+    forceCoolant = true;
+    return;
+  case COMMAND_OPTIONAL_STOP:
+    writeBlock(mFormat.format(1));
+    forceSpindleSpeed = true;
+    forceCoolant = true;
+    return;
   case COMMAND_START_SPINDLE:
     onCommand(tool.clockwise ? COMMAND_SPINDLE_CLOCKWISE : COMMAND_SPINDLE_COUNTERCLOCKWISE);
     return;
