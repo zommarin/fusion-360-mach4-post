@@ -4,8 +4,8 @@
 
   Mach4Mill post processor configuration.
 
-  $Revision: 42297 f0d93e8ed85ce8e94af6a820f56a7d4c811c4a25 $
-  $Date: 2019-04-25 10:51:29 $
+  $Revision: 42298 41184e9c87ba5c635df2577822fd16c00733a60e $
+  $Date: 2019-04-26 10:40:41 $
   
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -176,6 +176,7 @@ var saveShowSequenceNumbers;
 var cycleSubprogramIsActive = false;
 var patternIsActive = false;
 var lastOperationComment = "";
+var incrementalSubprogram;
 var retracted = false; // specifies that the tool has been retracted to the safe plane
 
 /**
@@ -520,6 +521,11 @@ function areSpatialBoxesTranslated(_box1, _box2) {
     !areSpatialVectorsDifferent(Vector.diff(_box2[0], _box1[0]), Vector.diff(_box2[1], _box1[1]));
 }
 
+/** Returns true if the spatial boxes are same. */
+function areSpatialBoxesSame(_box1, _box2) {
+  return !areSpatialVectorsDifferent(_box1[0], _box2[0]) && !areSpatialVectorsDifferent(_box1[1], _box2[1]);
+}
+
 function subprogramDefine(_initialPosition, _abc, _retracted, _zIsOutput) {
   // convert patterns into subprograms
   var usePattern = false;
@@ -563,7 +569,7 @@ function subprogramDefine(_initialPosition, _abc, _retracted, _zIsOutput) {
       patternIsActive = true;
 
       if (firstPattern) {
-        subprogramStart(_initialPosition, _abc, true);
+        subprogramStart(_initialPosition, _abc, incrementalSubprogram);
       } else {
         skipRemainingSection();
         setCurrentPosition(getFramePosition(currentSection.getFinalPosition()));
@@ -661,6 +667,7 @@ function subprogramIsValid(_section, _patternId, _patternType) {
 
   var rotation = getRotation();
   var translation = getTranslation();
+  incrementalSubprogram = undefined;
 
   for (var i = 0; i < numberOfSections; ++i) {
     var section = getSection(i);
@@ -677,9 +684,13 @@ function subprogramIsValid(_section, _patternId, _patternType) {
           patternBox[0] = getFramePosition(tempBox[0]);
           patternBox[1] = getFramePosition(tempBox[1]);
 
-          if (!areSpatialBoxesTranslated(masterPosition, patternPosition) || !areSpatialBoxesTranslated(masterBox, patternBox)) {
+          if (areSpatialBoxesSame(masterPosition, patternPosition) && areSpatialBoxesSame(masterBox, patternBox)) {
+            incrementalSubprogram = incrementalSubprogram ? incrementalSubprogram : false;
+          } else if (!areSpatialBoxesTranslated(masterPosition, patternPosition) || !areSpatialBoxesTranslated(masterBox, patternBox)) {
             validSubprogram = false;
             break;
+          } else {
+            incrementalSubprogram = true;
           }
         }
 
