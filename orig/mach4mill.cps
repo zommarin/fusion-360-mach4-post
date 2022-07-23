@@ -4,8 +4,8 @@
 
   Mach4Mill post processor configuration.
 
-  $Revision: 42298 41184e9c87ba5c635df2577822fd16c00733a60e $
-  $Date: 2019-04-26 10:40:41 $
+  $Revision: 42457 5bb5ded34020f26b3aa0bb54b5c3c6b888359b7d $
+  $Date: 2019-08-28 08:19:00 $
   
   FORKID {EFD551E4-4A07-4362-BE2C-930B399FA824}
 */
@@ -1035,8 +1035,7 @@ function onCyclePoint(x, y, z) {
       }
       break;
     case "chip-breaking":
-      // cycle.accumulatedDepth is ignored
-      if (P > 0) {
+      if ((cycle.accumulatedDepth < cycle.depth) || (P > 0)) {
         expandCyclePoint(x, y, z);
       } else {
         writeBlock(
